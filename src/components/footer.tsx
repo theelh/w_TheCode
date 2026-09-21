@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 interface MenuItem {
   title: string;
@@ -16,12 +17,12 @@ const Footer = () => {
 
   const menuItems: MenuItem[] = [
     {
-      title: t("footer.quickLinks", "Quick Links"),
+      title: t("footer.quickLinks", "W_TheCode"),
       links: [
-        { text: t("nav.home", "Home"), url: "/" },
-        { text: t("nav.about", "About"), url: "/about" },
-        { text: t("nav.projects", "Projects"), url: "/projects" },
-        { text: t("nav.contact", "Contact"), url: "/contact" },
+        { text: t("nav.home", "Professional"), url: "/" },
+        { text: t("nav.about", "SEO Perdormence"), url: "#" },
+        { text: t("nav.projects", "Experiences"), url: "#" },
+        { text: t("nav.contact", "Effective Results"), url: "#" },
       ],
     },
     {
@@ -52,7 +53,7 @@ const Footer = () => {
   ];
 
   return (
-    <section className="pt-24 pb-12 bg-black">
+    <section className="pt-24 pb-12 py-7 bg-black">
       <footer className="mx-auto w-full max-w-7xl px-6">
 
         {/* Top Divider */}
@@ -89,14 +90,14 @@ const Footer = () => {
               <ul className="space-y-3 text-[#bcb0b0]">
                 {section.links.map((link, linkIdx) => (
                   <li key={linkIdx}>
-                    <a
-                      href={link.url}
+                    <Link
+                      to={link.url}
                       target={link.external ? "_blank" : "_self"}
                       rel={link.external ? "noopener noreferrer" : undefined}
                       className="transition-colors duration-200 hover:text-white hover:underline"
                     >
                       {link.text}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>

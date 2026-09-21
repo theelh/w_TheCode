@@ -1,8 +1,8 @@
-import i18next from "i18next"
-import { ArrowRightIcon,  Menu, X } from "lucide-react"
+import { Menu, SquareArrowOutUpRight, X } from "lucide-react"
 import React, { useEffect, useRef, useState } from "react"
 import AppLogo from "./app-logo"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom";
+import { ScrollSmoother } from "gsap/ScrollSmoother"
 
 interface NavItem {
   title: string
@@ -10,13 +10,44 @@ interface NavItem {
 }
 
 const AppTop: React.FC = () => {
-  const isRTL: boolean = i18next.language === "ar"
   const [isScrolled, setIsScrolled] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
   const [isOpen, setIsOpen] = useState(false)
 
   const lastScrollY = useRef(0)
-  const currentPath = window.location.pathname
+  const location = useLocation(); // ✅ hook to get current route
+  const currentPath = location.pathname;
+
+  //scrolleffect
+  const handleNavClick = (
+  e: React.MouseEvent<HTMLAnchorElement>,
+  href: string
+) => {
+  if (!href.startsWith("#")) return
+
+  e.preventDefault()
+
+  const target = document.querySelector(href)
+
+  if (!target) {
+    console.warn(`Element ${href} not found`)
+    return
+  }
+
+  const smoother = ScrollSmoother.get()
+
+  if (smoother) {
+    smoother.scrollTo(target, true, "top 100px")
+  } else {
+    target.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    })
+  }
+
+  window.history.pushState(null, "", href)
+  setIsOpen(false)
+}
 
   useEffect(() => {
     lastScrollY.current = window.scrollY
@@ -45,20 +76,19 @@ const AppTop: React.FC = () => {
 
   const navItems: NavItem[] = [
     { title: "Home", href: "/" },
-    { title: "About", href: "/about" },
-    { title: "Project", href: "/projects" },
-    { title: "Contact", href: "/contact" },
+    { title: "About", href: "#about" },
+    { title: "Projects", href: "#projects" },
+    { title: "Contact", href: "#contact" },
   ]
+
 
   return (
     <header
-      dir={isRTL ? "rtl" : "ltr"}
       className={`
-        fixed top-4 left-1/2 py-1 -translate-x-1/2 z-50
-        w-[95%] max-w-7xl
+        fixed top-4 left-1/2 -translate-x-1/2 z-50
+        w-[95%] max-w-360
         rounded-3xl
         transition-all duration-500 ease-out
-        shadow-xl shadow-[#5B51CA]/15
         ${
           isVisible
             ? "translate-y-0 opacity-100"
@@ -66,8 +96,8 @@ const AppTop: React.FC = () => {
         }
         ${
           isScrolled
-            ? "bg-white/80 backdrop-blur-xl border border-white/20 shadow-xl shadow-[#5B51CA]/15"
-            : "bg-white/80 border border-white/0"
+            ? "bg-black/80 backdrop-blur-xl border border-[#c4aaff]/40 shadow-xl shadow-[#c4aaff]/35"
+            : "bg-transparent"
         }
       `}
     >
@@ -82,43 +112,42 @@ const AppTop: React.FC = () => {
           {/* DESKTOP NAV */}
           <nav className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
-              <Link
+              <a
                 key={item.href}
-                to={item.href}
-                className={`relative px-3 py-2 text-md font-medium transition-all
+                href={item.href}
+                onClick={(e) => handleNavClick(e, item.href)}
+                className={`relative px-3 py-2 text-sm font-medium transition-all
                   ${
                     currentPath === item.href
-                      ? "text-[#5B51CA]"
-                      : "text-[#1a2121]"
+                      ? "text-blue-200"
+                      : "text-white"
                   }
-                  hover:text-[#5B51CA]
+                  hover:text-white/70
                 `}
               >
                 {item.title}
 
                 {currentPath === item.href && (
-                  <span className="absolute -bottom-1 left-1/2 h-0.5 w-10 -translate-x-1/2 bg-[#5B51CA]" />
+                  <span className="absolute -bottom-1 left-1/2 h-0.5 w-10 -translate-x-1/2 bg-[#8B5CF6]" />
                 )}
-              </Link>
+              </a>
             ))}
           </nav>
 
           {/* DESKTOP BUTTON */}
-          <div className="hidden md:flex items-center">
+          <div className=" md:flex items-center">
             <a
-            href="/contact"
-            target="_blank"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center justify-center gap-2 border border-[#c0c0c0] bg-[#5B51CA] text-white px-4 py-2 rounded-md text-lg "
-          >
-            Send message
-            <ArrowRightIcon size={16} />
-          </a>
+                href="https://github.com/theelh"
+                target="_blank"
+                className="flex items-center gap-2 shadow-inner shadow-[#c4aaff] glass-surface-lg bg-linear-90 from-[#8B5CF6]  to-[#c4aaff]/20 border border-white/10 border-spacing-5 text-white px-7 py-3 font-semibold rounded-full text-sm">
+              My Github
+              <SquareArrowOutUpRight size={16} />
+            </a>
           </div>
 
           {/* MOBILE HAMBURGER */}
           <button
-            className="md:hidden text-black/70 hover:text-black transition-colors"
+            className="md:hidden text-white"
             onClick={() => setIsOpen(!isOpen)}
           >
             {isOpen ? <X size={26} /> : <Menu size={26} />}
@@ -128,39 +157,39 @@ const AppTop: React.FC = () => {
 
       {/* MOBILE MENU */}
       <div
-        className={`
-          md:hidden overflow-hidden transition-all duration-500 ease-in-out
+        className={`md:hidden overflow-hidden transition-all duration-500 ease-in-out
           ${isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}
         `}
       >
-        <div className="flex flex-col gap-4 px-6 pb-6 pt-2 bg-white/90 backdrop-blur-xl rounded-b-3xl">
+        <div className="flex flex-col gap-4 px-6 pb-6 pt-2 bg-black/90 backdrop-blur-xl rounded-b-3xl">
 
           {navItems.map((item) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              onClick={() => setIsOpen(false)}
+            <a
+            key={item.href}
+            href={item.href}
+            onClick={(e) => handleNavClick(e, item.href)}
               className={`text-base font-medium transition-colors
                 ${
                   currentPath === item.href
-                    ? "text-[#5B51CA]"
-                    : "text-[#1a2121]"
+                    ? "text-[#7AF298]"
+                    : "text-white"
                 }
-                hover:text-[#5B51CA]
+                hover:text-[#7AF298]
               `}
             >
               {item.title}
-            </Link>
+            </a>
           ))}
 
           <a
-            href="/contact"
+            // href="/mine-portfolio/files/Mine-cv.pdf"
+            href="https://github.com/theelh"
             target="_blank"
             onClick={() => setIsOpen(false)}
-            className="flex items-center justify-center gap-2 border border-[#c0c0c0] bg-[#5B51CA] text-white px-4 py-2 rounded-md text-lg mt-4"
+            className="flex items-center justify-center gap-2 border border-[#c0c0c0] bg-[#7af298] text-black px-4 py-2 rounded-md font-mono text-sm mt-4"
           >
-            Send us a message
-            <ArrowRightIcon size={16} />
+            My Github
+            <SquareArrowOutUpRight size={16} />
           </a>
         </div>
       </div>

@@ -25,12 +25,22 @@ export default function ZoomScrollImage() {
   const imageRef = useRef<HTMLImageElement | null>(null)
 
   useEffect(() => {
+  let ctx: any
+
+  const initGSAP = async () => {
     if (!sectionRef.current || !imageRef.current) return
 
-    const ctx = gsap.context(() => {
-      // --------------------------
-      // IMAGE SCALE ON SCROLL
-      // --------------------------
+    const gsapModule = await import("gsap")
+    const ScrollTriggerModule = await import("gsap/ScrollTrigger")
+
+    const gsap = gsapModule.default
+    const ScrollTrigger = ScrollTriggerModule.ScrollTrigger
+
+    gsap.registerPlugin(ScrollTrigger)
+
+    ctx = gsap.context(() => {
+
+      // IMAGE SCALE
       gsap.fromTo(
         imageRef.current,
         { scale: 1.7 },
@@ -38,54 +48,55 @@ export default function ZoomScrollImage() {
           scale: 1,
           ease: "none",
           scrollTrigger: {
-            trigger: imageRef.current,
-            start: "top center",
-            end: "bottom bottom",
-            scrub: true,
-          },
-        }
-      )
-
-      // --------------------------
-      // ICONS CIRCULAR RANDOM ANIMATION
-      // --------------------------
-      const icons: HTMLDivElement[] = Array.from(
-        sectionRef.current!.querySelectorAll(".floating-icon")
-      )
-
-      const minRadius = 300  // minimum distance from center
-      const maxRadius = 300  // maximum distance from center
-
-      gsap.fromTo(
-        icons,
-        { opacity: 0, scale: 0, x: 0, y: 0 },
-        {
-          opacity: 1,
-          scale: 1,
-          x: () => {
-            const angle = Math.random() * Math.PI * 2
-            const radius = minRadius + Math.random() * (maxRadius - minRadius)
-            return radius * Math.cos(angle)
-          },
-          y: () => {
-            const angle = Math.random() * Math.PI * 2
-            const radius = minRadius + Math.random() * (maxRadius - minRadius)
-            return radius * Math.sin(angle)
-          },
-          rotation: () => Math.random() * 360,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: sectionRef.current!,
+            trigger: sectionRef.current,
             start: "top center",
             end: "bottom top",
             scrub: true,
           },
         }
       )
+
+      // ICONS
+      const icons = Array.from(
+        sectionRef.current!.querySelectorAll(".floating-icon")
+      )
+
+      const minRadius = 250
+      const maxRadius = 400
+
+      icons.forEach((icon) => {
+        const angle = Math.random() * Math.PI * 2
+        const radius = minRadius + Math.random() * (maxRadius - minRadius)
+
+        gsap.fromTo(
+          icon,
+          { opacity: 0, scale: 0 },
+          {
+            opacity: 1,
+            scale: 1,
+            x: radius * Math.cos(angle),
+            y: radius * Math.sin(angle),
+            rotation: Math.random() * 360,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top center",
+              end: "bottom top",
+              scrub: true,
+            },
+          }
+        )
+      })
+
     }, sectionRef)
 
-    return () => ctx.revert()
-  }, [])
+    ScrollTrigger.refresh()
+  }
+
+  initGSAP()
+
+  return () => ctx?.revert()
+}, [])
 
   const iconsArray = [
     CodeIcon,
@@ -102,22 +113,18 @@ export default function ZoomScrollImage() {
     Server,
   ]
 
-  const colors = [
-    "#5B51CA", "#5B51CA", "#5B51CA", "#5B51CA",
-    "#5B51CA", "#5B51CA", "#5B51CA", "#5B51CA",
-    "#5B51CA", "#5B51CA", "#5B51CA", "#5B51CA",
-  ]
+  const colors = Array(12).fill("#5B51CA")
 
   return (
     <section
       ref={sectionRef}
-      className="relative flex items-center justify-center h-[650px] w-screen overflow-hidden"
+      className="relative flex items-center justify-center min-h-165.5 w-screen overflow-hidden"
     >
       {/* ICONS */}
       {iconsArray.map((Icon, idx) => (
         <div
           key={idx}
-          className={`floating-icon absolute z-20 blur-[2px]`}
+          className="floating-icon absolute z-20 blur-[2px]"
           style={{ color: colors[idx % colors.length] }}
         >
           <Icon size={50} />
@@ -125,12 +132,12 @@ export default function ZoomScrollImage() {
       ))}
 
       {/* IMAGE */}
-      <div className="w-80 overflow-hidden z-50">
+      <div className="overflow-hidden z-50">
         <img
           ref={imageRef}
           src="./img/about/about1.png"
           alt="Zoom"
-          className="w-96 h-100 object-cover"
+          className="w-96 h-auto object-cover"
         />
       </div>
     </section>

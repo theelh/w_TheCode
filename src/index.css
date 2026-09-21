@@ -1,7 +1,32 @@
 
 @import "tailwindcss";
+@plugin "liquidglass-tailwind";
 
 @custom-variant dark (&:is(.dark *));
+
+
+@custom-variant dark (&:is(.dark *));
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+.shader-frame {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.shader-frame canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
 
 /* ===== INTER ===== */
 @font-face {
@@ -168,6 +193,11 @@
 .marquee:hover {
   animation-play-state: paused;
 }
+
+.input{
+  @apply w-full p-4 rounded-xl bg-white/20 border border-black/10 text-black outline-none focus:border-black/30;
+}
+
 
 @theme {
     --font-sans:
